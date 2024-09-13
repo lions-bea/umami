@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ok, methodNotAllowed } from 'next-basics';
+import { ok } from 'next-basics';
 
 export interface ConfigResponse {
   telemetryDisabled: boolean;
@@ -18,5 +18,5 @@ export default async (req: NextApiRequest, res: NextApiResponse<ConfigResponse>)
     });
   }
 
-  return methodNotAllowed(res);
+  // return methodNotAllowed(res);
 };

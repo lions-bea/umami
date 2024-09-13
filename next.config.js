@@ -12,7 +12,7 @@ const disableLogin = process.env.DISABLE_LOGIN;
 const disableUI = process.env.DISABLE_UI;
 const forceSSL = process.env.FORCE_SSL;
 const frameAncestors = process.env.ALLOWED_FRAME_URLS;
-const privateMode = process.env.PRIVATE_MODE;
+const privateMode = 'false'; //process.env.PRIVATE_MODE;
 const trackerScriptName = process.env.TRACKER_SCRIPT_NAME;
 
 const contentSecurityPolicy = [
@@ -35,6 +35,18 @@ const headers = [
       .join(';')
       .replace(/\s{2,}/g, ' ')
       .trim(),
+  },
+  {
+    key: 'Access-Control-Allow-Origin',
+    value: '*',
+  },
+  {
+    key: 'Access-Control-Allow-Headers',
+    value: 'X-Requested-With',
+  },
+  {
+    key: 'Access-Control-Max-Age',
+    value: '86400',
   },
 ];
 
