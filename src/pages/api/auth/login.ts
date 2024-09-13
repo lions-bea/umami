@@ -4,14 +4,7 @@ import { secret } from 'lib/crypto';
 import { useValidate } from 'lib/middleware';
 import { NextApiRequestQueryBody, User } from 'lib/types';
 import { NextApiResponse } from 'next';
-import {
-  checkPassword,
-  createSecureToken,
-  forbidden,
-  methodNotAllowed,
-  ok,
-  unauthorized,
-} from 'next-basics';
+import { checkPassword, createSecureToken, forbidden, ok, unauthorized } from 'next-basics';
 import { getUserByUsername } from 'queries';
 import * as yup from 'yup';
 import { ROLES } from 'lib/constants';
@@ -46,26 +39,30 @@ export default async (
   if (req.method === 'POST') {
     const { username, password } = req.body;
 
-    const user = await getUserByUsername(username, { includePassword: true });
+    try {
+      const user = await getUserByUsername(username, { includePassword: true });
 
-    if (user && checkPassword(password, user.password)) {
-      if (redis.enabled) {
-        const token = await saveAuth({ userId: user.id });
+      if (user && checkPassword(password, user.password)) {
+        if (redis.enabled) {
+          const token = await saveAuth({ userId: user.id });
 
-        return ok(res, { token, user });
+          return ok(res, { token, user });
+        }
+
+        const token = createSecureToken({ userId: user.id }, secret());
+        const { id, username, role, createdAt } = user;
+
+        return ok(res, {
+          token,
+          user: { id, username, role, createdAt, isAdmin: role === ROLES.admin },
+        });
       }
-
-      const token = createSecureToken({ userId: user.id }, secret());
-      const { id, username, role, createdAt } = user;
-
-      return ok(res, {
-        token,
-        user: { id, username, role, createdAt, isAdmin: role === ROLES.admin },
-      });
+    } catch (error) {
+      console.error('err', error);
     }
 
     return unauthorized(res, 'message.incorrect-username-password');
   }
-
-  return methodNotAllowed(res);
+  // return true
+  return ok(res);
 };
